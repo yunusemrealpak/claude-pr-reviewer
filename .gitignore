@@ -1,0 +1,51 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+.eggs/
+*.egg-info/
+*.egg
+
+# Logs
+logs/
+*.log
+
+# Temp files
+temp/
+tmp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+dist/
+build/
+
+# Documentation artifacts (local only)
+compass_artifact_wf-87a419df-18d7-4d77-985b-5ab9d47f76f0_text_markdown.md
+ARCHITECTURE.md
+DEVELOPMENT_PLAN.md
+x.md
