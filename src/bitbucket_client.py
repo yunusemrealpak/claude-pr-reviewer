@@ -189,6 +189,53 @@ class BitbucketClient:
 
         return response.json().get("values", [])
 
+    @retry_with_backoff(max_retries=3, base_delay=1.0)
+    def get_pr_info(
+        self,
+        workspace: str,
+        repo_slug: str,
+        pr_id: int
+    ) -> dict:
+        """
+        Get pull request information.
+
+        Args:
+            workspace: Bitbucket workspace slug
+            repo_slug: Repository slug
+            pr_id: Pull request ID
+
+        Returns:
+            Pull request information including source/destination branches
+        """
+        url = f"{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
+
+        response = requests.get(
+            url,
+            auth=self._auth,
+            headers={"Accept": "application/json"},
+            timeout=30
+        )
+
+        if not response.ok:
+            logger.error(f"API Error: {response.status_code} - {response.text}")
+
+        response.raise_for_status()
+
+        pr_data = response.json()
+        logger.info(f"Retrieved PR #{pr_id} info: {pr_data.get('title', 'N/A')}")
+
+        return {
+            "pr_id": pr_data.get("id"),
+            "title": pr_data.get("title"),
+            "source_branch": pr_data.get("source", {}).get("branch", {}).get("name"),
+            "dest_branch": pr_data.get("destination", {}).get("branch", {}).get("name"),
+            "author": pr_data.get("author", {}).get("display_name"),
+            "repo_full_name": pr_data.get("source", {}).get("repository", {}).get("full_name"),
+            "workspace": workspace,
+            "repo_slug": repo_slug,
+            "raw_data": pr_data
+        }
+
     def get_clone_url(self, workspace: str, repo_slug: str) -> str:
         """
         Generate authenticated clone URL using API token.
