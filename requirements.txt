@@ -5,3 +5,9 @@ GitPython>=3.1.40
 requests>=2.31.0
 pydantic>=2.5.0
 httpx>=0.25.0
+
+# Google OAuth2 and Gmail API
+google-auth>=2.25.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.110.0

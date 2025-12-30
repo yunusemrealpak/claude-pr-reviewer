@@ -13,6 +13,7 @@ from src.utils.notifications import (
     notify_clone_failure,
     notify_no_changes
 )
+from src.utils.email_service import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ class PRProcessor:
 
         self.bitbucket = BitbucketClient(email, api_token)
         self.git_ops: Optional[GitOperations] = None
+        self.email_service = EmailService()
 
     def process(self, pr_info: PRInfo) -> bool:
         """
@@ -103,6 +105,14 @@ class PRProcessor:
             )
 
             logger.info(f"Review completed for PR #{pr_info.pr_id}")
+
+            # Step 5: Send email notification
+            try:
+                language = os.getenv("REVIEW_LANGUAGE", "tr")
+                self.email_service.send_review_notification(pr_info, language)
+            except Exception as e:
+                logger.warning(f"Email notification failed (non-blocking): {e}")
+
             return True
 
         except Exception as e:

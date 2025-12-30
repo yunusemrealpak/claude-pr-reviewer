@@ -11,6 +11,7 @@ Automated code review system for Bitbucket Cloud pull requests using Claude Code
 - Flutter/Dart focused review criteria (Clean Architecture, BLoC/Cubit patterns)
 - Automatic PR comment posting with review results
 - Multi-language support (Turkish & English)
+- Email notifications with PR links (Gmail & Outlook support)
 
 ## Architecture
 
@@ -59,6 +60,15 @@ Edit `.env` with your credentials:
 BITBUCKET_EMAIL=your-email@example.com
 BITBUCKET_API_TOKEN=your-api-token
 WEBHOOK_SECRET=your-webhook-secret
+
+# Email notifications (optional - run setup script first)
+EMAIL_ENABLED=true
+EMAIL_PROVIDER=gmail
+EMAIL_SENDER_ADDRESS=your-email@gmail.com
+EMAIL_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
+EMAIL_OAUTH_CLIENT_SECRET=your-client-secret
+EMAIL_OAUTH_REFRESH_TOKEN=your-refresh-token
+EMAIL_FIXED_RECIPIENT=team-lead@company.com
 ```
 
 ### 5. Authenticate Claude Code CLI
@@ -94,6 +104,123 @@ ngrok http 8000
    - `read:repository:bitbucket`
    - `read:pullrequest:bitbucket`
    - `write:pullrequest:bitbucket`
+
+## Email Notification Setup (Optional)
+
+Email notifications send a brief message with a PR link after each review is completed using **Gmail API with OAuth2** authentication.
+
+### Quick Setup (Automated Script)
+
+Run the interactive setup script to configure Gmail OAuth2:
+
+```bash
+python tools/setup_gmail_oauth.py
+```
+
+This script will:
+1. Ask for your Google Cloud Console Client ID and Client Secret
+2. Open a browser for Google authorization
+3. Generate a refresh token
+4. Provide configuration to add to your `.env` file
+
+### Manual Setup
+
+If you prefer manual setup:
+
+#### Step 1: Create Google Cloud Project
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Project name: "PR Review Automation" (or any name)
+
+#### Step 2: Enable Gmail API
+
+1. In Google Cloud Console, go to **APIs & Services** → **Library**
+2. Search for "Gmail API"
+3. Click **Enable**
+
+#### Step 3: Create OAuth2 Credentials
+
+1. Go to **APIs & Services** → **Credentials**
+2. Click **Create Credentials** → **OAuth client ID**
+3. If asked, configure OAuth consent screen:
+   - User Type: **External**
+   - App name: "PR Review Bot"
+   - Add your email as developer contact
+   - Save and continue
+4. Back to credentials creation:
+   - Application type: **Desktop app**
+   - Name: "PR Review Bot"
+   - ⚠️ **IMPORTANT:** Add **Authorized redirect URIs**:
+     - `http://localhost:8080/`
+     - `http://localhost:8080`
+   - Click **Create**
+5. **Copy the Client ID and Client Secret** (you'll need these)
+
+#### Step 4: Get Refresh Token
+
+Run the setup script:
+```bash
+python tools/setup_gmail_oauth.py
+```
+
+Or manually use Google OAuth Playground:
+1. Go to [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/)
+2. Click settings icon (⚙️) → Check "Use your own OAuth credentials"
+3. Enter your Client ID and Client Secret
+4. In Step 1: Select `https://www.googleapis.com/auth/gmail.send`
+5. Click "Authorize APIs" and sign in
+6. In Step 2: Click "Exchange authorization code for tokens"
+7. Copy the **Refresh token**
+
+#### Step 5: Update .env File
+
+Add these to your `.env`:
+```env
+EMAIL_ENABLED=true
+EMAIL_PROVIDER=gmail
+EMAIL_SENDER_ADDRESS=your-email@gmail.com
+EMAIL_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
+EMAIL_OAUTH_CLIENT_SECRET=your-client-secret
+EMAIL_OAUTH_REFRESH_TOKEN=your-refresh-token
+EMAIL_FIXED_RECIPIENT=team-lead@company.com
+```
+
+### Disable Email Notifications
+
+Set `EMAIL_ENABLED=false` in `.env` to disable email notifications.
+
+### Troubleshooting
+
+**"400: redirect_uri_mismatch" error:**
+- Go to Google Cloud Console → Credentials
+- Click on your OAuth Client ID
+- Under "Authorized redirect URIs", add:
+  - `http://localhost:8080/`
+  - `http://localhost:8080`
+- Click **Save** and try again
+
+**"OAuth2 authentication failed":**
+- Verify Client ID and Client Secret are correct
+- Ensure Gmail API is enabled in Google Cloud Console
+- Check refresh token is valid (regenerate if needed)
+
+**"Invalid grant" error:**
+- Refresh token may have expired
+- Run `python tools/setup_gmail_oauth.py` again to get a new token
+
+**Email not received:**
+- Check spam/junk folder
+- Verify `EMAIL_FIXED_RECIPIENT` address is correct
+- Check server logs for error messages
+- Ensure sender email matches the Google account used for OAuth
+
+**"Access blocked" during authorization:**
+- Your app is not verified by Google (expected for personal use)
+- Click "Advanced" → "Go to [Your App Name] (unsafe)"
+- This is safe if you created the app yourself
+
+**Note:** Email failures do not block the PR review process. If email sending fails, the error is logged and the review continues normally.
 
 ## Project Structure
 
