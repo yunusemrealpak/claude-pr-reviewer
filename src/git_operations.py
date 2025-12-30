@@ -182,7 +182,24 @@ class GitOperations:
     def cleanup(self) -> None:
         """Remove temporary directory and clean up resources."""
         if self.temp_dir and shutil.os.path.exists(self.temp_dir):
-            shutil.rmtree(self.temp_dir)
-            logger.info("Temporary directory cleaned up")
-            self.temp_dir = None
-            self.repo = None
+            try:
+                # Use onerror handler for Windows compatibility
+                # Windows may have readonly files in .git that need special handling
+                def handle_remove_readonly(func, path, exc):
+                    """Error handler for Windows readonly files."""
+                    import stat
+                    if not os.access(path, os.W_OK):
+                        # Change file permissions and retry
+                        os.chmod(path, stat.S_IWUSR)
+                        func(path)
+                    else:
+                        raise
+
+                shutil.rmtree(self.temp_dir, onerror=handle_remove_readonly)
+                logger.info("Temporary directory cleaned up")
+            except Exception as e:
+                logger.error(f"Failed to remove temp directory {self.temp_dir}: {e}")
+                logger.warning("Manual cleanup may be required")
+            finally:
+                self.temp_dir = None
+                self.repo = None
