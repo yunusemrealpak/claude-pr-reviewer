@@ -95,7 +95,9 @@ ngrok http 8000
 2. Add webhook:
    - **URL**: `https://your-ngrok-url.ngrok-free.app/webhook`
    - **Secret**: Same as `WEBHOOK_SECRET` in `.env`
-   - **Triggers**: `Pull Request: Created`
+   - **Triggers**: Select both:
+     - `Pull Request: Created`
+     - `Pull Request: Updated`
 
 ## Bitbucket API Token Setup
 
@@ -273,13 +275,14 @@ python -m src.trigger_review --help
 
 ### Automatic (Webhook-based)
 
-1. PR is created from `feature/*` or `fix/*` to `development`
+1. PR is created or updated from `feature/*` or `fix/*` to `development`
 2. Bitbucket sends webhook to your server
 3. Server clones the repository to temp directory
 4. Extracts diff for Dart files
 5. Sends diff to Claude Code CLI for review
 6. Posts review comment back to PR
-7. Cleans up temp directory
+7. Sends email notification with PR link
+8. Cleans up temp directory
 
 ### Manual Trigger
 

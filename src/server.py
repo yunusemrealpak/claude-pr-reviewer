@@ -124,9 +124,11 @@ async def webhook_handler(
         logger.warning("Invalid webhook signature!")
         raise HTTPException(status_code=401, detail="Invalid signature")
 
-    # Check event type
+    # Check event type - process both created and updated events
     event_type = request.headers.get("X-Event-Key", "")
-    if event_type != "pullrequest:created":
+    allowed_events = ["pullrequest:created", "pullrequest:updated"]
+
+    if event_type not in allowed_events:
         logger.info(f"Ignoring event type: {event_type}")
         return {"status": "ignored", "reason": f"Event type: {event_type}"}
 
