@@ -252,13 +252,15 @@ def get_review_prompt(
     """
     prompts = PROMPTS.get(language, PROMPTS_TR)
 
-    # Escape curly braces in diff content to prevent format string errors
-    # Dart/Flutter code often contains {} which conflicts with Python's format()
+    # Escape curly braces to prevent format string errors
+    # Dart/Flutter code and commit messages often contain {} which conflicts with Python's format()
+    safe_commit_summary = commit_summary.replace("{", "{{").replace("}", "}}")
+    safe_files_summary = files_summary.replace("{", "{{").replace("}", "}}")
     safe_diff_content = diff_content.replace("{", "{{").replace("}", "}}")
 
     return prompts["review_prompt"].format(
-        commit_summary=commit_summary,
-        files_summary=files_summary,
+        commit_summary=safe_commit_summary,
+        files_summary=safe_files_summary,
         diff_content=safe_diff_content
     )
 
