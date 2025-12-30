@@ -1,30 +1,32 @@
 # Bitbucket PR Code Review Automation
 
-Automated code review system for Bitbucket Cloud pull requests using Claude Code CLI.
+Automated code review system for Bitbucket Cloud pull requests using **Claude Opus 4.5** via Anthropic API.
 
 ## Features
 
 - Webhook-based PR detection for `feature/*` and `fix/*` branches
 - Manual PR review trigger via CLI tool (for missed PRs when server is offline)
 - Automatic repository cloning and diff extraction
-- AI-powered code review using Claude Code CLI
+- AI-powered code review using **Claude Opus 4.5** via Anthropic API
 - Flutter/Dart focused review criteria (Clean Architecture, BLoC/Cubit patterns)
 - Automatic PR comment posting with review results
 - Multi-language support (Turkish & English)
-- Email notifications with PR links (Gmail & Outlook support)
+- Email notifications with PR links (Gmail OAuth2)
+- Dual mode: API (default) or CLI
 
 ## Architecture
 
 ```
-Bitbucket PR → Webhook → FastAPI Server → Clone Repo → Claude Code CLI → PR Comment
+Bitbucket PR → Webhook → FastAPI Server → Clone Repo → Claude API (Opus 4.5) → PR Comment + Email
 ```
 
 ## Requirements
 
 - Python 3.10+
-- Claude Code CLI (with active subscription)
+- **Anthropic API Key** (for Claude API access)
 - ngrok or cloudflared (for webhook tunneling)
 - Bitbucket Cloud account with API token
+- (Optional) Claude CLI for CLI mode
 
 ## Installation
 
@@ -61,6 +63,10 @@ BITBUCKET_EMAIL=your-email@example.com
 BITBUCKET_API_TOKEN=your-api-token
 WEBHOOK_SECRET=your-webhook-secret
 
+# Claude Configuration
+CLAUDE_USE_CLI=false
+ANTHROPIC_API_KEY=sk-ant-api03-your-api-key
+
 # Email notifications (optional - run setup script first)
 EMAIL_ENABLED=true
 EMAIL_PROVIDER=gmail
@@ -71,11 +77,38 @@ EMAIL_OAUTH_REFRESH_TOKEN=your-refresh-token
 EMAIL_FIXED_RECIPIENT=team-lead@company.com
 ```
 
-### 5. Authenticate Claude Code CLI
+### 5. Get Anthropic API Key
 
-```bash
-claude auth login
-```
+1. Go to [Anthropic Console](https://console.anthropic.com/)
+2. Sign in or create an account
+3. Navigate to **API Keys**
+4. Click **Create Key**
+5. Copy the API key (starts with `sk-ant-api03-`)
+6. Add to `.env`:
+   ```env
+   ANTHROPIC_API_KEY=sk-ant-api03-your-api-key
+   ```
+
+**Note:** The system uses Claude Opus 4.5 model by default for high-quality code reviews.
+
+### 5b. (Optional) Use Claude CLI Instead
+
+If you prefer to use Claude CLI instead of API:
+
+1. Install Claude CLI:
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+
+2. Authenticate:
+   ```bash
+   claude auth login
+   ```
+
+3. Set in `.env`:
+   ```env
+   CLAUDE_USE_CLI=true
+   ```
 
 ### 6. Start the server
 
@@ -279,7 +312,7 @@ python -m src.trigger_review --help
 2. Bitbucket sends webhook to your server
 3. Server clones the repository to temp directory
 4. Extracts diff for Dart files
-5. Sends diff to Claude Code CLI for review
+5. Sends diff to **Claude Opus 4.5** via Anthropic API for review
 6. Posts review comment back to PR
 7. Sends email notification with PR link
 8. Cleans up temp directory
