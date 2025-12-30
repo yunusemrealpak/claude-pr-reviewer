@@ -1,6 +1,8 @@
 """Git operations for repository cloning and diff extraction."""
 
 import logging
+import os
+import stat
 import subprocess
 import tempfile
 import shutil
@@ -187,7 +189,6 @@ class GitOperations:
                 # Windows may have readonly files in .git that need special handling
                 def handle_remove_readonly(func, path, exc):
                     """Error handler for Windows readonly files."""
-                    import stat
                     if not os.access(path, os.W_OK):
                         # Change file permissions and retry
                         os.chmod(path, stat.S_IWUSR)
