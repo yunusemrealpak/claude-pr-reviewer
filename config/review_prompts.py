@@ -24,34 +24,46 @@ PROMPTS_TR = {
 
 ## İnceleme Kriterleri:
 
-### 1. Flutter Best Practice'ler
-- Widget kompozisyonu doğru mu?
-- const constructor'lar kullanılmış mı?
-- State management düzgün mü?
+### 1. Presentation Katmanı (UI/Cubit)
+- **State Management**: State management Cubit/State pattern ile yapılmış mı?
+- **Cubit Sorumlulukları**: Cubit içerisinde business logic var mı? (Cubit'in tek görevi UI ile usecase'ler arasında köprü görevi görmek ve state'i güncellemek olmalı)
+- **UI Temizliği**: UI sayfalarında uzun kodlar var mı? Componentlere ayrılmış mı?
+- **Freezed Kullanımı**: State'ler freezed ile kurgulanmış mı? Örnek yapı:
+  ```dart
+  @freezed
+  class AuthState with _$AuthState {
+    const factory AuthState.initial() = AuthStateInitial;
+    const factory AuthState.loading() = AuthStateLoading;
+    const factory AuthState.authenticated(AuthTokenEntity? token) = AuthStateAuthenticated;
+    const factory AuthState.error(String message) = AuthStateError;
+  }
+  ```
+- **Design System**: Projedeki design_system kullanılmış mı? Design system'da olan yapılar yeniden yazılmamış mı?
+- **Widget Best Practices**: const constructor'lar kullanılmış mı?
 
-### 2. Clean Architecture Uyumu
-- Katman ayrımı (domain/data/presentation) doğru mu?
-- Dependency injection düzgün uygulanmış mı?
-- Repository pattern'e uyulmuş mu?
+### 2. Domain Katmanı (Entities/UseCases/Repositories)
+- **Entity Yapısı**: Entity'ler Equatable ile sarmalanmış mı?
+- **UseCase Pattern**: UseCase'ler UseCase<T,R> veya UseCaseWithoutParams<T> ile sarmalanmış mı?
+- **Validation**: UseCase'ler gerekli validation kontrollerini yapıyor mu?
+- **Params Konumu**: UseCase'lerin ihtiyaç duyduğu params modelleri, usecase dosyasının içinde üstte oluşturulmuş mu?
+- **Dependency Injection**: Dependency injection düzgün uygulanmış mı?
 
-### 3. Cubit/BLoC Pattern'leri
-- State handling doğru mu?
-- Event-driven mimari uygulanmış mı?
-- State'ler immutable mı?
+### 3. Data Katmanı (Models/Repositories/DataSources)
+- **Model-Entity Ayrımı**: Modeller Entity'lerden extend edilmemiş mi? (Modeller ayrı, Entity'ler ayrı olmalı)
+- **Error Handling**: Repository'ler projedeki error handler ile kullanılmış mı?
+- **Exception Handling**: Remote data source'lar try-catch mekanizmasını düzgün kullanmış mı?
+- **Repository Pattern**: Repository pattern'e uyulmuş mu?
 
-### 4. Dart Conventions
-- Null safety düzgün kullanılmış mı?
-- effective_dart kurallarına uyulmuş mu?
-- Naming convention'lar doğru mu?
+### 4. Dart Conventions & Performans
+- **Null Safety**: Null safety düzgün kullanılmış mı?
+- **Naming**: effective_dart kurallarına ve naming convention'lara uyulmuş mu?
+- **Rebuild Optimizasyonu**: Gereksiz rebuild var mı?
+- **Memory Management**: Memory leak riski var mı?
+- **Async Handling**: Async handling doğru mu?
 
-### 5. Performans
-- Gereksiz rebuild var mı?
-- Memory leak riski var mı?
-- Async handling doğru mu?
-
-### 6. Güvenlik
-- Input validation yapılmış mı?
-- Hassas veri exposure riski var mı?
+### 5. Güvenlik
+- **Input Validation**: Input validation yapılmış mı?
+- **Data Exposure**: Hassas veri exposure riski var mı?
 
 ## Çıktı Formatı:
 
@@ -67,14 +79,36 @@ Değişikliklerin genel durumuna göre SADECE BİRİNİ seç:
 2-3 cümlelik genel değerlendirme.
 
 ### Bulgular
-Varsa sorunları önem derecesine göre listele:
+Varsa sorunları katman bazlı ve önem derecesine göre listele:
+
+**Presentation Katmanı:**
+- Cubit'te business logic kullanımı (KRİTİK)
+- Freezed kullanılmamış state'ler (YÜKSEK)
+- Design system yerine custom widget yazımı (YÜKSEK)
+- Uzun UI dosyaları, componentlere ayrılmamış kod (ORTA)
+
+**Domain Katmanı:**
+- Entity'ler Equatable kullanmıyor (YÜKSEK)
+- UseCase pattern'e uyulmuyor (KRİTİK)
+- Validation eksik (YÜKSEK)
+- Params modelleri yanlış konumda (ORTA)
+
+**Data Katmanı:**
+- Model'ler Entity'den extend ediliyor (KRİTİK)
+- Error handler kullanılmıyor (YÜKSEK)
+- Try-catch mekanizması eksik/hatalı (YÜKSEK)
+
+**Diğer:**
 - **KRİTİK**: Merge öncesi mutlaka düzeltilmeli
 - **YÜKSEK**: Düzeltilmesi önerilir
 - **ORTA**: İyileştirme önerisi
 - **DÜŞÜK**: Stil/convention önerisi
 
 ### Dosya Bazlı Öneriler
-Varsa spesifik dosya ve satır önerileri.
+Spesifik dosya ve satır önerileri ile birlikte hangi katman kuralının ihlal edildiğini belirt.
+Örnekler vererek nasıl düzeltilmesi gerektiğini göster.
+
+ÖZEL UYARI: Eğer design_system'da olan bir component yeniden yazılmışsa, mutlaka bunu vurgula ve design_system'daki ilgili componenti öner.
 
 Yapıcı ve spesifik ol. Gereksiz detaya girme, en önemli konulara odaklan.""",
 
@@ -99,34 +133,46 @@ PROMPTS_EN = {
 
 ## Review Criteria:
 
-### 1. Flutter Best Practices
-- Is widget composition correct?
-- Are const constructors used?
-- Is state management proper?
+### 1. Presentation Layer (UI/Cubit)
+- **State Management**: Is state management implemented with Cubit/State pattern?
+- **Cubit Responsibilities**: Does Cubit contain business logic? (Cubit's only responsibility should be bridging UI with usecases and updating state)
+- **UI Cleanliness**: Are UI pages too long? Are they separated into components?
+- **Freezed Usage**: Are states structured with freezed? Example structure:
+  ```dart
+  @freezed
+  class AuthState with _$AuthState {
+    const factory AuthState.initial() = AuthStateInitial;
+    const factory AuthState.loading() = AuthStateLoading;
+    const factory AuthState.authenticated(AuthTokenEntity? token) = AuthStateAuthenticated;
+    const factory AuthState.error(String message) = AuthStateError;
+  }
+  ```
+- **Design System**: Is the project's design_system being used? Are design system components being rewritten unnecessarily?
+- **Widget Best Practices**: Are const constructors used?
 
-### 2. Clean Architecture Compliance
-- Is layer separation (domain/data/presentation) correct?
-- Is dependency injection properly implemented?
-- Is repository pattern followed?
+### 2. Domain Layer (Entities/UseCases/Repositories)
+- **Entity Structure**: Are entities wrapped with Equatable?
+- **UseCase Pattern**: Are usecases wrapped with UseCase<T,R> or UseCaseWithoutParams<T>?
+- **Validation**: Do usecases perform necessary validation checks?
+- **Params Location**: Are usecase params models created at the top of the usecase file?
+- **Dependency Injection**: Is dependency injection properly implemented?
 
-### 3. Cubit/BLoC Patterns
-- Is state handling correct?
-- Is event-driven architecture applied?
-- Are states immutable?
+### 3. Data Layer (Models/Repositories/DataSources)
+- **Model-Entity Separation**: Do models NOT extend from entities? (Models and Entities should be separate)
+- **Error Handling**: Do repositories use the project's error handler?
+- **Exception Handling**: Do remote data sources properly use try-catch mechanism?
+- **Repository Pattern**: Is repository pattern followed?
 
-### 4. Dart Conventions
-- Is null safety properly used?
-- Are effective_dart rules followed?
-- Are naming conventions correct?
+### 4. Dart Conventions & Performance
+- **Null Safety**: Is null safety properly used?
+- **Naming**: Are effective_dart rules and naming conventions followed?
+- **Rebuild Optimization**: Are there unnecessary rebuilds?
+- **Memory Management**: Is there memory leak risk?
+- **Async Handling**: Is async handling correct?
 
-### 5. Performance
-- Are there unnecessary rebuilds?
-- Is there memory leak risk?
-- Is async handling correct?
-
-### 6. Security
-- Is input validation done?
-- Is there sensitive data exposure risk?
+### 5. Security
+- **Input Validation**: Is input validation done?
+- **Data Exposure**: Is there sensitive data exposure risk?
 
 ## Output Format:
 
@@ -142,14 +188,36 @@ Based on overall changes, select ONLY ONE:
 2-3 sentence overall assessment.
 
 ### Findings
-List issues by severity if any:
+List issues by layer and severity if any:
+
+**Presentation Layer:**
+- Business logic in Cubit (CRITICAL)
+- States not using freezed (HIGH)
+- Custom widgets instead of design_system (HIGH)
+- Long UI files, code not separated into components (MEDIUM)
+
+**Domain Layer:**
+- Entities not using Equatable (HIGH)
+- UseCase pattern not followed (CRITICAL)
+- Missing validation (HIGH)
+- Params models in wrong location (MEDIUM)
+
+**Data Layer:**
+- Models extending from Entities (CRITICAL)
+- Error handler not used (HIGH)
+- Try-catch mechanism missing/incorrect (HIGH)
+
+**Other:**
 - **CRITICAL**: Must fix before merge
 - **HIGH**: Should fix
 - **MEDIUM**: Improvement suggestion
 - **LOW**: Style/convention suggestion
 
 ### File-Specific Suggestions
-Specific file and line suggestions if any.
+Provide specific file and line suggestions along with which layer rule is violated.
+Show how to fix with examples.
+
+SPECIAL WARNING: If a component from design_system is being rewritten, highlight this and suggest the relevant component from design_system.
 
 Be constructive and specific. Avoid unnecessary details, focus on the most important issues.""",
 
