@@ -109,7 +109,8 @@ class PRProcessor:
             # Step 5: Send email notification
             try:
                 language = os.getenv("REVIEW_LANGUAGE", "tr")
-                self.email_service.send_review_notification(pr_info, language)
+                severity = result.severity or "minor"  # Default to minor if not set
+                self.email_service.send_review_notification(pr_info, severity, language)
             except Exception as e:
                 logger.warning(f"Email notification failed (non-blocking): {e}")
 

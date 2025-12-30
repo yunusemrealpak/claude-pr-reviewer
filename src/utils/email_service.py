@@ -201,6 +201,7 @@ class EmailService:
     def send_review_notification(
         self,
         pr_info,
+        severity: str = "minor",
         language: str = "tr"
     ) -> bool:
         """
@@ -208,6 +209,7 @@ class EmailService:
 
         Args:
             pr_info: PRInfo object containing PR details
+            severity: Review severity ('approved', 'minor', or 'critical')
             language: Language for email template (tr/en)
 
         Returns:
@@ -231,6 +233,7 @@ class EmailService:
                 pr_title=pr_info.title,
                 pr_author=pr_info.author,
                 pr_url=pr_url,
+                severity=severity,
                 language=language
             )
 

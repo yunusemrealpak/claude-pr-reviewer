@@ -33,12 +33,37 @@ def use_cli_mode() -> bool:
     return os.getenv("CLAUDE_USE_CLI", "false").lower() == "true"
 
 
+def extract_severity(review_content: str) -> str:
+    """
+    Extract severity level from review content.
+
+    Args:
+        review_content: Review text from Claude
+
+    Returns:
+        Severity level: 'approved', 'minor', or 'critical'
+    """
+    # Look for severity indicators in the review
+    content_lower = review_content.lower()
+
+    if "🟢" in review_content or "lgtm" in content_lower:
+        return "approved"
+    elif "🔴" in review_content or "needs review" in content_lower or "critical" in content_lower:
+        return "critical"
+    elif "🟡" in review_content or "minor issues" in content_lower:
+        return "minor"
+
+    # Default to minor if can't determine
+    return "minor"
+
+
 @dataclass
 class ReviewResult:
     """Data class for review result."""
     success: bool
     content: str
     error: Optional[str] = None
+    severity: Optional[str] = None  # 'approved', 'minor', or 'critical'
 
 
 class ClaudeReviewer:
@@ -133,10 +158,14 @@ class ClaudeReviewer:
                     error="Empty response from Claude API"
                 )
 
-            logger.info("Review completed successfully via Claude API")
+            # Extract severity level from review
+            severity = extract_severity(review_content)
+
+            logger.info(f"Review completed successfully via Claude API (severity: {severity})")
             return ReviewResult(
                 success=True,
-                content=review_content
+                content=review_content,
+                severity=severity
             )
 
         except AnthropicError as e:
@@ -182,10 +211,14 @@ class ClaudeReviewer:
             )
 
             if result.returncode == 0:
-                logger.info("Review completed successfully via Claude CLI")
+                # Extract severity level from review
+                severity = extract_severity(result.stdout)
+
+                logger.info(f"Review completed successfully via Claude CLI (severity: {severity})")
                 return ReviewResult(
                     success=True,
-                    content=result.stdout
+                    content=result.stdout,
+                    severity=severity
                 )
             else:
                 logger.error(f"Claude CLI error: {result.stderr}")
