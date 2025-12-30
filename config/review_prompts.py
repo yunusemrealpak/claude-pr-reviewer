@@ -28,16 +28,7 @@ PROMPTS_TR = {
 - **State Management**: State management Cubit/State pattern ile yapılmış mı?
 - **Cubit Sorumlulukları**: Cubit içerisinde business logic var mı? (Cubit'in tek görevi UI ile usecase'ler arasında köprü görevi görmek ve state'i güncellemek olmalı)
 - **UI Temizliği**: UI sayfalarında uzun kodlar var mı? Componentlere ayrılmış mı?
-- **Freezed Kullanımı**: State'ler freezed ile kurgulanmış mı? Örnek yapı:
-  ```dart
-  @freezed
-  class AuthState with _$AuthState {
-    const factory AuthState.initial() = AuthStateInitial;
-    const factory AuthState.loading() = AuthStateLoading;
-    const factory AuthState.authenticated(AuthTokenEntity? token) = AuthStateAuthenticated;
-    const factory AuthState.error(String message) = AuthStateError;
-  }
-  ```
+- **Freezed Kullanımı**: State'ler freezed ile kurgulanmış mı?
 - **Design System**: Projedeki design_system kullanılmış mı? Design system'da olan yapılar yeniden yazılmamış mı?
 - **Widget Best Practices**: const constructor'lar kullanılmış mı?
 
@@ -137,16 +128,7 @@ PROMPTS_EN = {
 - **State Management**: Is state management implemented with Cubit/State pattern?
 - **Cubit Responsibilities**: Does Cubit contain business logic? (Cubit's only responsibility should be bridging UI with usecases and updating state)
 - **UI Cleanliness**: Are UI pages too long? Are they separated into components?
-- **Freezed Usage**: Are states structured with freezed? Example structure:
-  ```dart
-  @freezed
-  class AuthState with _$AuthState {
-    const factory AuthState.initial() = AuthStateInitial;
-    const factory AuthState.loading() = AuthStateLoading;
-    const factory AuthState.authenticated(AuthTokenEntity? token) = AuthStateAuthenticated;
-    const factory AuthState.error(String message) = AuthStateError;
-  }
-  ```
+- **Freezed Usage**: Are states structured with freezed?
 - **Design System**: Is the project's design_system being used? Are design system components being rewritten unnecessarily?
 - **Widget Best Practices**: Are const constructors used?
 
