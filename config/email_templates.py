@@ -2,7 +2,7 @@
 
 # Turkish email templates
 EMAIL_TEMPLATES_TR = {
-    "subject": "Kod İncelemesi: {pr_title}",
+    "subject": "[{repo_slug}] Kod İncelemesi: {pr_title}",
     "body_approved": """Merhaba {pr_author},
 
 "{pr_title}" başlıklı pull request'iniz başarıyla incelendi, sorun bulunamadı.
@@ -38,7 +38,7 @@ Otomatik Kod İnceleme Sistemi
 
 # English email templates
 EMAIL_TEMPLATES_EN = {
-    "subject": "Code Review: {pr_title}",
+    "subject": "[{repo_slug}] Code Review: {pr_title}",
     "body_approved": """Hello {pr_author},
 
 Your pull request "{pr_title}" has been successfully reviewed, no issues found.
@@ -79,19 +79,20 @@ EMAIL_TEMPLATES = {
 }
 
 
-def get_email_subject(pr_title: str, language: str = "tr") -> str:
+def get_email_subject(pr_title: str, repo_slug: str, language: str = "tr") -> str:
     """
     Generate email subject based on language.
 
     Args:
         pr_title: Pull request title
+        repo_slug: Repository slug/name
         language: Language code (tr/en)
 
     Returns:
         Formatted email subject
     """
     templates = EMAIL_TEMPLATES.get(language, EMAIL_TEMPLATES_TR)
-    return templates["subject"].format(pr_title=pr_title)
+    return templates["subject"].format(pr_title=pr_title, repo_slug=repo_slug)
 
 
 def get_email_body(

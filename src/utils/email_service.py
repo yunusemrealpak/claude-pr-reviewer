@@ -101,7 +101,9 @@ class EmailService:
         Returns:
             Full Bitbucket PR URL
         """
-        return f"https://bitbucket.org/{workspace}/{repo_slug}/pull-requests/{pr_id}"
+        # Ensure workspace is lowercase for URL
+        workspace_lower = workspace.lower()
+        return f"https://bitbucket.org/{workspace_lower}/{repo_slug}/pull-requests/{pr_id}"
 
     def _get_gmail_service(self):
         """
@@ -228,7 +230,7 @@ class EmailService:
             )
 
             # Generate email content
-            subject = get_email_subject(pr_info.title, language)
+            subject = get_email_subject(pr_info.title, pr_info.repo_slug, language)
             body = get_email_body(
                 pr_title=pr_info.title,
                 pr_author=pr_info.author,
@@ -237,23 +239,34 @@ class EmailService:
                 language=language
             )
 
-            # Send email based on provider
+            # Collect all recipients
+            recipients = [self.config.fixed_recipient]  # Always include fixed recipient
+            if pr_info.author_email:
+                # Add author email if available and different from fixed recipient
+                if pr_info.author_email != self.config.fixed_recipient:
+                    recipients.append(pr_info.author_email)
+
+            # Send email to all recipients based on provider
+            all_success = True
             if self.config.provider == "gmail":
-                success = self._send_gmail_message(
-                    recipient=self.config.fixed_recipient,
-                    subject=subject,
-                    body=body
-                )
+                for recipient in recipients:
+                    success = self._send_gmail_message(
+                        recipient=recipient,
+                        subject=subject,
+                        body=body
+                    )
+                    if not success:
+                        all_success = False
             else:
                 logger.error(f"Provider '{self.config.provider}' not yet implemented for OAuth2")
                 return False
 
-            if success:
-                logger.info(f"PR review notification sent for PR #{pr_info.pr_id}")
+            if all_success:
+                logger.info(f"PR review notification sent to {len(recipients)} recipient(s) for PR #{pr_info.pr_id}")
             else:
-                logger.warning(f"Failed to send PR review notification for PR #{pr_info.pr_id}")
+                logger.warning(f"Some email notifications failed for PR #{pr_info.pr_id}")
 
-            return success
+            return all_success
 
         except Exception as e:
             logger.error(f"Error sending review notification: {e}")

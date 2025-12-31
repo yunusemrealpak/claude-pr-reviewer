@@ -88,6 +88,14 @@ def extract_pr_info(payload: dict) -> dict:
     """
     pr_data = payload.get("pullrequest", {})
     repo_data = payload.get("repository", {})
+    actor_data = payload.get("actor", {})
+
+    # Try to get author email from multiple possible locations
+    author_email = (
+        actor_data.get("email_address") or
+        pr_data.get("author", {}).get("email_address") or
+        None
+    )
 
     return {
         "pr_id": pr_data.get("id"),
@@ -96,7 +104,8 @@ def extract_pr_info(payload: dict) -> dict:
         "source_branch": pr_data.get("source", {}).get("branch", {}).get("name", ""),
         "dest_branch": pr_data.get("destination", {}).get("branch", {}).get("name", ""),
         "title": pr_data.get("title", ""),
-        "author": payload.get("actor", {}).get("display_name", "Unknown")
+        "author": actor_data.get("display_name", "Unknown"),
+        "author_email": author_email
     }
 
 

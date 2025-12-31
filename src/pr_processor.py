@@ -28,6 +28,7 @@ class PRInfo:
     dest_branch: str
     title: str
     author: str
+    author_email: Optional[str] = None
 
 
 class PRProcessor:
@@ -172,7 +173,8 @@ def process_pr_review(pr_info_dict: dict) -> None:
         source_branch=pr_info_dict["source_branch"],
         dest_branch=pr_info_dict["dest_branch"],
         title=pr_info_dict.get("title", ""),
-        author=pr_info_dict.get("author", "Unknown")
+        author=pr_info_dict.get("author", "Unknown"),
+        author_email=pr_info_dict.get("author_email")
     )
 
     processor = PRProcessor()
